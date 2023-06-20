@@ -1,6 +1,7 @@
 from scapy.all import * 
 
 arqInicializacao = 'netconf.txt'
+arqLog = 'netlog.txt'
 
 class analisadorDeRede:
     def __init__(self, arquivoInicializacao):
@@ -87,12 +88,10 @@ class analisadorDeRede:
 
         return f"{horario}, {camada}, {protocolo}, {IP_host}, {origem}, {destino}, {evento}, {descricao}"
 
-
+    #def varrePortas(self):
     
-    def capturaPacotes(self):
+    def varreIps(self):
         while True:
-            time.sleep(int(self.periodoTarefas))
-            
             for i in range(1, 255):
                 ip_addr = str(f"{self.subrede[:-4]}{i}")
 
@@ -104,6 +103,10 @@ class analisadorDeRede:
 
                     yield log
 
+            time.sleep(int(self.periodoTarefas))
+
+    #def tarefasPeriodicas(self):
+
         
     
 
@@ -111,7 +114,20 @@ class analisadorDeRede:
 def main():
     analisador = analisadorDeRede(arqInicializacao)
 
-    for log in analisador.capturaPacotes():
-        print(log)
+    if os.path.exists(arqLog):
+        arquivo_log = open(arqLog, 'a')
+    else:
+        arquivo_log = open(arqLog, 'w')
+
+    for log in analisador.varreIps():
+            arquivo_log.write(log)
+
+    arquivo_log.close()
+
+
+
+    
+
+    
 
 main()

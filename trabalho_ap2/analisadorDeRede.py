@@ -28,13 +28,13 @@ class analisadorDeRede:
         linha2 = linha2.split(",")
         
         self.periodoTarefas = linha2[0]
-        self.subrede = linha2[1]
+        self.subrede = f"{linha2[1]}/24"
         self.ip_local = linha2[2]
 
     def analisePacotes(self, pacote):    
         horario = time.strftime("%H:%M:%S", time.localtime(pacote.time))
-        anomalia = "-"
-        descricao = anomalia
+        evento = "-"
+        descricao = evento
 
         if TCP in pacote or UDP in pacote:
             camada = "Transporte"
@@ -76,24 +76,33 @@ class analisadorDeRede:
             IP_host = "-"
             origem = "-"
             destino = "-"
-            anomalia = "-"
+            evento = "-"
             descricao = "-"
 
-        if()
+        if IP_host in self.ips_ativos:
+            evento = "Rede"
+        else:
+            evento = "Anomalia"
+        
 
-        return f"{horario}, {camada}, {protocolo}, {IP_host}, {origem}, {destino}, {anomalia}, {descricao}"
+        return f"{horario}, {camada}, {protocolo}, {IP_host}, {origem}, {destino}, {evento}, {descricao}"
 
 
     
     def capturaPacotes(self):
         while True:
             time.sleep(int(self.periodoTarefas))
-            pacotes = sniff(timeout=5)
-            for pacote in pacotes:
-                log = self.analisePacotes(pacote)
+            
+            for i in range(1, 255):
+                ip_addr = str(f"{self.subrede[:-4]}{i}")
 
-                yield log
+                pacote = IP(dst=ip_addr)/ICMP()
+                reply = sr1(pacote, timeout=2, verbose=0)
+                
+                if reply and reply.haslayer(ICMP) and reply[ICMP].type == 0:
+                    log = self.analisePacotes(reply)
 
+                    yield log
 
         
     

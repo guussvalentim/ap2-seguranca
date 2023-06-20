@@ -1,10 +1,10 @@
 from scapy.all import * 
 
 arqInicializacao = 'netconf.txt'
+arqLog = 'netlog.txt'
 
 class analisadorDeRede:
     def __init__(self, arquivoInicializacao):
-        print("init")
         arq = open(arquivoInicializacao, "r")
 
         self.ips_ativos = []
@@ -32,7 +32,8 @@ class analisadorDeRede:
         self.ip_local = linha2[2]
 
     def analisePacotes(self, pacote):    
-        horario = time.strftime("%H:%M:%S", time.localtime(pacote.time))
+        if pacote != None:
+            horario = time.strftime("%H:%M:%S", time.localtime(pacote.time))
         evento = "-"
         descricao = evento
 
@@ -90,19 +91,21 @@ class analisadorDeRede:
 
     
     def capturaPacotes(self):
-        while True:
-            time.sleep(int(self.periodoTarefas))
-            
-            for i in range(1, 255):
+        while True:            
+            for i in range(137, 255):
                 ip_addr = str(f"{self.subrede[:-4]}{i}")
 
                 pacote = IP(dst=ip_addr)/ICMP()
                 reply = sr1(pacote, timeout=2, verbose=0)
-                
+
                 if reply and reply.haslayer(ICMP) and reply[ICMP].type == 0:
                     log = self.analisePacotes(reply)
+                else:
+                    log = f"-, -, -, -, -, -, -, -"
 
-                    yield log
+                yield log
+            
+            time.sleep(int(self.periodoTarefas))
 
         
     
@@ -111,7 +114,19 @@ class analisadorDeRede:
 def main():
     analisador = analisadorDeRede(arqInicializacao)
 
+    if os.path.exists(arqLog):
+        arquivo_log = open(arqLog, 'a')
+    else:
+        arquivo_log = open(arqLog, 'w')
+
+    arquivo_log.write("alo")
+
     for log in analisador.capturaPacotes():
         print(log)
+        arquivo_log.write("a")
+        
+
+    arquivo_log.close()
+
 
 main()

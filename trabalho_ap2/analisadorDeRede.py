@@ -88,7 +88,7 @@ class analisadorDeRede:
 
         return f"{horario}, {camada}, {protocolo}, {IP_host}, {origem}, {destino}, {evento}, {descricao}"
 
-
+    #def varrePortas(self):
     
     def capturaPacotes(self):
         while True:            
@@ -106,6 +106,10 @@ class analisadorDeRede:
                 yield log
             
             time.sleep(int(self.periodoTarefas))
+
+            time.sleep(int(self.periodoTarefas))
+
+    #def tarefasPeriodicas(self):
 
         
     
